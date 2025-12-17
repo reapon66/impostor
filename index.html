@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Jogo do Impostor</title>
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --bg-gradient: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            --glass-bg: rgba(255, 255, 255, 0.1);
+            --glass-border: rgba(255, 255, 255, 0.2);
+            --text-color: #ffffff;
+            --input-bg: rgba(0, 0, 0, 0.3);
+            --accent-color: #4facfe;
+        }
+
+        * {
+            box-sizing: border-box;
+            outline: none;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background: var(--bg-gradient);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+            color: var(--text-color);
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        @keyframes gradientBG {
+            0% {
+                background-position: 0% 50%;
+            }
+
+            50% {
+                background-position: 100% 50%;
+            }
+
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+
+        #app {
+            width: 100%;
+            perspective: 1000px;
+        }
+
+        .card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 40px 30px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            text-align: center;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        h1,
+        h2,
+        h3 {
+            margin: 0 0 15px 0;
+            font-size: 4rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        h1 {
+            font-size: 5rem;
+            color: #fff;
+        }
+
+        p {
+            font-size: 3rem;
+            line-height: 1.6;
+            color: #e0e0e0;
+        }
+
+        b {
+            font-size: 3rem;
+        }
+
+        input,
+        select {
+            width: 100%;
+            padding: 15px;
+            margin-top: 10px;
+            background: var(--input-bg);
+            border: 2px solid transparent;
+            border-radius: 12px;
+            color: #fff;
+            font-size: 3rem;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        input:focus {
+            border-color: var(--accent-color);
+            background: rgba(0, 0, 0, 0.5);
+            box-shadow: 0 0 15px rgba(79, 172, 254, 0.3);
+        }
+
+        #categoriaList {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .categoria-box {
+            margin: 0;
+        }
+
+        .categoria-box label {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 10px 15px;
+            border-radius: 50px;
+            border: 1px solid var(--glass-border);
+            transition: all 0.3s;
+            font-size: 2rem;
+            user-select: none;
+        }
+
+        .categoria-box input[type="checkbox"] {
+            appearance: none;
+            width: 0;
+            height: 0;
+        }
+
+        .categoria-box:has(input:checked) label,
+        .categoria-box input:checked+label {
+            background: var(--primary-gradient);
+            border-color: transparent;
+            box-shadow: 0 4px 15px rgba(118, 75, 162, 0.4);
+            transform: translateY(-2px);
+            font-weight: bold;
+        }
+
+        label {
+            font-size: 2rem;
+        }
+
+        button {
+            width: 100%;
+            padding: 16px;
+            margin-top: 30px;
+            font-size: 3rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border: none;
+            border-radius: 50px;
+            background: var(--primary-gradient);
+            color: #fff;
+            cursor: pointer;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        button:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 15px 30px rgba(118, 75, 162, 0.4);
+        }
+
+        button:active {
+            transform: translateY(1px);
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="app"></div>
+
+    <script>
+        const app = document.getElementById("app");
+
+        // ===========================
+        // PALAVRAS POR CATEGORIA
+        // ===========================
+        const categorias = {
+            "Objetos": [
+                "computador",
+                "janela",
+                "carro",
+                "cadeira",
+                "telefone",
+                "controle remoto",
+                "mochila",
+                "chave",
+                "garrafa",
+                "óculos",
+                "ventilador",
+                "lâmpada",
+                "teclado",
+                "martelo",
+                "bussola"
+            ],
+
+            "Lugares": [
+                "praia",
+                "montanha",
+                "biblioteca",
+                "estádio",
+                "cidade",
+                "deserto",
+                "floresta",
+                "castelo",
+                "porto",
+                "ilha",
+                "subterrâneo",
+                "cinema",
+                "aeroporto",
+                "fazenda",
+                "ruína antiga"
+            ],
+
+            "Comidas": [
+                "banana",
+                "pizza",
+                "sorvete",
+                "arroz",
+                "morango",
+                "hambúrguer",
+                "lasanha",
+                "sushi",
+                "abacate",
+                "brigadeiro",
+                "tacos",
+                "camarão",
+                "panqueca",
+                "macarrão",
+                "ramen"
+            ],
+
+            "Coisas do Espaço": [
+                "planeta",
+                "galáxia",
+                "asteroide",
+                "estrela",
+                "cometa",
+                "nebulosa",
+                "buraco negro",
+                "supernova",
+                "quasar",
+                "meteoro",
+                "satélite",
+                "constelação",
+                "cinturão de asteroides",
+                "exoplaneta"
+            ],
+
+            "Animais": [
+                "cachorro",
+                "gato",
+                "elefante",
+                "tartaruga",
+                "peixe",
+                "águia",
+                "pinguim",
+                "golfinho",
+                "polvo",
+                "lagarto",
+                "ornitorrinco",
+                "girafa",
+                "hipopótamo",
+                "camaleão",
+                "lobo"
+            ],
+
+            "Profissões": [
+                "professor",
+                "médico",
+                "engenheiro",
+                "bombeiro",
+                "policial",
+                "programador",
+                "astrônomo",
+                "arqueólogo",
+                "piloto",
+                "chef",
+                "marceneiro",
+                "biólogo",
+                "jornalista",
+                "eletricista",
+                "design gráfico"
+            ],
+
+            "Tecnologia": [
+                "smartphone",
+                "notebook",
+                "servidor",
+                "roteador",
+                "dronе",
+                "inteligência artificial",
+                "blockchain",
+                "nanotecnologia",
+                "biometria",
+                "robô",
+                "GPU",
+                "API",
+                "compilador",
+                "criptografia",
+                "algoritmo"
+            ],
+
+            "Mitologia": [
+                "dragão",
+                "fênix",
+                "minotauro",
+                "hidra",
+                "centauro",
+                "kraken",
+                "medusa",
+                "grifo",
+                "valquíria",
+                "elfo",
+                "titã",
+                "caronte",
+                "quimera",
+                "banshee",
+                "golem"
+            ],
+
+            "Coisas da Casa": [
+                "sofá",
+                "cama",
+                "geladeira",
+                "fogão",
+                "espelho",
+                "chuveiro",
+                "ventilador",
+                "armário",
+                "tapete",
+                "escada",
+                "liquidificador",
+                "relógio de parede",
+                "micro-ondas",
+                "mascara de dormir",
+                "panela"
+            ],
+
+            "Transporte": [
+                "bicicleta",
+                "moto",
+                "ônibus",
+                "avião",
+                "navio",
+                "helicóptero",
+                "metrô",
+                "trem-bala",
+                "patinete",
+                "balão de ar quente",
+                "carroça",
+                "skate",
+                "submarino",
+                "triciclo",
+                "trator"
+            ],
+            "Pessoas Famosas": [
+                "Albert Einstein",
+                "Leonardo da Vinci",
+                "Elon Musk",
+                "Beyoncé",
+                "Cristiano Ronaldo",
+                "Taylor Swift",
+                "Michael Jackson",
+                "Nikola Tesla",
+                "Angelina Jolie",
+                "Keanu Reeves",
+                "Shakira",
+                "Usain Bolt",
+                "Messi",
+                "Adele",
+                "Jesus Cristo",
+                "Cleópatra",
+                "Hitler",
+            ],
+
+            "Países": [
+                "Brasil",
+                "Estados Unidos",
+                "Japão",
+                "Alemanha",
+                "França",
+                "Reino Unido",
+                "Canadá",
+                "China",
+                "Itália",
+                "Espanha",
+                "Austrália",
+                "México",
+                "Argentina",
+                "Portugal",
+                "Índia"
+            ],
+
+            "Marcas Famosas": [
+                "Apple",
+                "Samsung",
+                "Nike",
+                "Adidas",
+                "Coca-Cola",
+                "McDonald's",
+                "Google",
+                "Amazon",
+                "Microsoft",
+                "Ferrari",
+                "BMW",
+                "Sony",
+                "Pepsi",
+                "Gucci",
+                "Toyota"
+            ],
+            "Personagens": [
+                "Naruto Uzumaki",
+                "Goku",
+                "Luffy",
+                "Homem-Aranha",
+                "Batman",
+                "Superman",
+                "Homem de Ferro",
+                "Hulk",
+                "Capitão América",
+                "Thor",
+                "Wolverine",
+                "Pikachu",
+                "Ash (Pokémon)",
+                "Shrek",
+                "Fiona",
+                "Bob Esponja",
+                "Patrick Estrela",
+                "Scooby-Doo",
+                "Vegeta",
+                "Itachi Uchiha",
+                "Joe Goldberg",
+                "Rick Sanchez",
+                "Chaves",
+                "Chapolin Colorado",
+                "Seu Madruga",
+                "Vingador (Caverna do Dragão)",
+                "He-Man",
+                "Elsa (Frozen)",
+                "Buzz Lightyear",
+                "Woody",
+                "Homer Simpson",
+                "Bart Simpson",
+                "Darth Vader",
+                "Yoda",
+                "Harry Potter",
+                "Hermione Granger",
+                "Rony Weasley",
+                "Jack Sparrow",
+                "Indiana Jones",
+                "Sherlock Holmes"
+            ]
+
+        };
+
+
+        let totalPlayers = 0;
+        let players = [];
+        let impostorIndex = 0;
+        let palavraEscolhida = "";
+        let indexAtual = 0;
+        let primeiroASpeak = 0;
+
+        // ===========================
+        // TELA INICIAL
+        // ===========================
+        function telaInicial() {
+            const memoria = carregarMemoria();
+
+            app.innerHTML = `
+        <div class=" card inicio">
+            <h1>Impostor da oficina da torta</h1>
+
+            <label>Quantidade de jogadores:</label>
+            <input type="number" id="numPlayers" min="3"  value="${memoria.qtd || 5}" oninput="gerarInputsJogadores()">
+
+            <h3 style="margin-top:20px">Nomes dos jogadores:</h3>
+            <div id="playerNames"></div>
+
+            <h3 style="margin-top:30px">Escolha as categorias:</h3>
+            <div id="categoriaList">
+                ${Object.keys(categorias).map(cat => `
+                    <div class="categoria-box">
+                        <label>
+                            <input type="checkbox" value="${cat}" ${memoria.categorias.includes(cat) ? "checked" : ""}>
+                            ${cat}
+                        </label>
+                    </div>
+                `).join("")}
+            </div>
+
+            <button onclick="iniciarJogo()">Começar</button>
+        </div>
+    `;
+
+            gerarInputsJogadores(memoria.nomes);
+        }
+
+        // ===========================
+        // GERAR INPUTS DE NOMES
+        // ===========================
+        function gerarInputsJogadores(nomesSalvos = []) {
+            const qtd = parseInt(document.getElementById("numPlayers").value);
+            const box = document.getElementById("playerNames");
+
+            if (!qtd || qtd < 1) return;
+
+            box.innerHTML = "";
+
+            for (let i = 1; i <= qtd; i++) {
+                const nomeSalvo = nomesSalvos[i - 1] || "";
+                box.innerHTML += `
+            <input class="player-input" id="playerName${i}" value="${nomeSalvo}" placeholder="Nome do jogador ${i}">
+        `;
+            }
+        }
+
+        // ===========================
+        // SALVAR NO LOCALSTORAGE
+        // ===========================
+        function salvarMemoria(qtd, nomes, categoriasMarcadas) {
+            localStorage.setItem("jogoImpostor", JSON.stringify({
+                qtd,
+                nomes,
+                categorias: categoriasMarcadas
+            }));
+        }
+
+        function carregarMemoria() {
+            const dados = localStorage.getItem("jogoImpostor");
+            if (!dados) {
+                return {
+                    qtd: 5,
+                    nomes: [],
+                    categorias: Object.keys(categorias) // tudo marcado na primeira vez
+                };
+            }
+            return JSON.parse(dados);
+        }
+
+        // ===========================
+        // INICIAR JOGO
+        // ===========================
+        function iniciarJogo() {
+            totalPlayers = parseInt(document.getElementById("numPlayers").value);
+
+            if (isNaN(totalPlayers) || totalPlayers < 3) {
+                alert("Mínimo de 3 jogadores!");
+                return;
+            }
+
+            // Categorias
+            const selecionadas = [...document.querySelectorAll("#categoriaList input:checked")]
+                .map(c => c.value);
+
+            if (selecionadas.length === 0) {
+                alert("Selecione pelo menos 1 categoria!");
+                return;
+            }
+
+            // Palavras da categoria
+            let pool = [];
+            selecionadas.forEach(cat => {
+                pool = pool.concat(categorias[cat]);
+            });
+
+            palavraEscolhida = pool[Math.floor(Math.random() * pool.length)];
+
+            // Nomes dos jogadores
+            players = [];
+            let nomes = [];
+
+            for (let i = 1; i <= totalPlayers; i++) {
+                let nome = document.getElementById(`playerName${i}`).value.trim();
+                if (!nome) nome = "Player " + i;
+
+                nomes.push(nome);
+                players.push({ id: i, nome, impostor: false });
+            }
+
+            // SALVAR NA MEMÓRIA
+            salvarMemoria(totalPlayers, nomes, selecionadas);
+
+            // Sorteio do impostor
+            impostorIndex = Math.floor(Math.random() * totalPlayers);
+            players[impostorIndex].impostor = true;
+
+            indexAtual = 0;
+
+            mostrarPlayerTelaSegura();
+        }
+
+        // ===========================
+        // TELA DE SEGURANÇA
+        // ===========================
+        function mostrarPlayerTelaSegura() {
+            const p = players[indexAtual];
+
+            app.innerHTML = `
+        <div class="card">
+            <h2>${p.nome}</h2>
+            <p>Clique para revelar seu papel.</p>
+
+            <button onclick="revelarPapel()">Revelar</button>
+        </div>
+    `;
+        }
+
+        // ===========================
+        // REVELAR PAPEL
+        // ===========================
+        function revelarPapel() {
+            const p = players[indexAtual];
+
+            app.innerHTML = `
+        <div class="card">
+            <h2>${p.nome}</h2>
+            ${p.impostor
+                    ? `<p>Você é o <b style="color:red;">IMPOSTOR</b>.</p>`
+                    : `<p>Sua palavra é:<br><br><b>${palavraEscolhida}</b></p>`
+                }
+            <button onclick="proximoPlayer()">OK, já vi</button>
+        </div>
+    `;
+        }
+
+        // ===========================
+        // PRÓXIMO PLAYER
+        // ===========================
+        function proximoPlayer() {
+            indexAtual++;
+            if (indexAtual < players.length) {
+                mostrarPlayerTelaSegura();
+            } else {
+                escolherQuemComenca();
+            }
+        }
+
+        // ===========================
+        // QUEM COMEÇA?
+        // ===========================
+        function escolherQuemComenca() {
+            const chanceImpostor = 0.05;
+            if (Math.random() < chanceImpostor) {
+                primeiroASpeak = impostorIndex;
+            } else {
+                const normais = players.filter(p => !p.impostor);
+                const escolha = Math.floor(Math.random() * normais.length);
+                primeiroASpeak = players.findIndex(p => p.id === normais[escolha].id);
+            }
+
+            telaInicioDiscussao();
+        }
+
+        // ===========================
+        // TELA FINAL
+        // ===========================
+        function telaInicioDiscussao() {
+            const p = players[primeiroASpeak];
+
+            app.innerHTML = `
+        <div class="card">
+            <h1>Papéis revelados!</h1>
+            <p>Quem começa falando:</p>
+
+            <h2 style="font-size:40px; margin-top:20px;">
+                ${p.nome}
+            </h2>
+
+            <button onclick="telaInicial()">Jogar de novo</button>
+        </div>
+    `;
+        }
+
+        telaInicial();
+    </script>
+
+</body>
+
+</html>
