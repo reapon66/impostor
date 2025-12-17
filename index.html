@@ -741,7 +741,7 @@
         <div class="card">
             <h2>${p.nome}</h2>
             ${p.impostor
-                    ? `<p>Você é o <b style="color:red;">IMPOSTOR</b>.</p>`
+                    ? `<p>Você é o <b style="color: var(--primary-color);">IMPOSTOR</b>.</p>`
                     : `<p>Sua palavra é:<br><br><b>${palavraEscolhida}</b></p>`
                 }
             <button onclick="proximoPlayer()">OK, já vi</button>
