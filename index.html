@@ -533,6 +533,38 @@
                 "Gucci",
                 "Toyota"
             ],
+            "Adjetivos": [
+                "Rápido",
+                "Lento",
+                "Inteligente",
+                "Burro",
+                "Forte",
+                "Fraco",
+                "Bonito",
+                "Feio",
+                "Alto",
+                "Baixo",
+                "Engraçado",
+                "Chato",
+                "Gentil",
+                "Grosso",
+                "Criativo",
+                "Sem graça",
+                "Corajoso",
+                "Medroso",
+                "Organizado",
+                "Bagunceiro",
+                "Calmo",
+                "Estressado",
+                "Confiante",
+                "Inseguro",
+                "Leal",
+                "Falso",
+                "Educado",
+                "Mal educado",
+                "Ambicioso",
+                "Preguiçoso"
+            ],
             "Personagens": [
                 "Naruto Uzumaki",
                 "Goku",
@@ -574,7 +606,7 @@
                 "Jack Sparrow",
                 "Indiana Jones",
                 "Sherlock Holmes",
-                "Galahad" 
+                "Galahad"
             ]
 
         };
@@ -593,15 +625,23 @@
         function telaInicial() {
             const memoria = carregarMemoria();
 
+
             app.innerHTML = `
         <div class=" card inicio">
             <h1>Impostor da oficina da torta</h1>
 
-            <label>Quantidade de jogadores:</label>
+            <h3 style="margin-top:20px">Quantidade de jogadores:</h3>
             <input type="number" id="numPlayers" min="3"  value="${memoria.qtd || 5}" oninput="gerarInputsJogadores()">
 
             <h3 style="margin-top:20px">Nomes dos jogadores:</h3>
             <div id="playerNames"></div>
+
+            <h3 style="margin-top:20px">Quantidade de impostores</h3>
+            <select id="numimpostores">
+                <option value="1" ${memoria.numImpostores == 1 ? "selected" : ""}>1</option>
+                <option value="2" ${memoria.numImpostores == 2 ? "selected" : ""}>2</option>
+            </select>
+            
 
             <h3 style="margin-top:30px">Escolha as categorias:</h3>
             <div id="categoriaList">
@@ -629,6 +669,7 @@
             const qtd = parseInt(document.getElementById("numPlayers").value);
             const box = document.getElementById("playerNames");
 
+
             if (!qtd || qtd < 1) return;
 
             box.innerHTML = "";
@@ -644,11 +685,12 @@
         // ===========================
         // SALVAR NO LOCALSTORAGE
         // ===========================
-        function salvarMemoria(qtd, nomes, categoriasMarcadas) {
+        function salvarMemoria(qtd, nomes, categoriasMarcadas, numImpostores) {
             localStorage.setItem("jogoImpostor", JSON.stringify({
                 qtd,
                 nomes,
-                categorias: categoriasMarcadas
+                categorias: categoriasMarcadas,
+                numImpostores
             }));
         }
 
@@ -658,10 +700,19 @@
                 return {
                     qtd: 5,
                     nomes: [],
-                    categorias: Object.keys(categorias) // tudo marcado na primeira vez
+                    categorias: Object.keys(categorias),
+                    numImpostores: 1
                 };
             }
-            return JSON.parse(dados);
+
+            const parsed = JSON.parse(dados);
+
+            return {
+                qtd: parsed.qtd ?? 5,
+                nomes: parsed.nomes ?? [],
+                categorias: parsed.categorias ?? Object.keys(categorias),
+                numImpostores: parsed.numImpostores ?? 1
+            };
         }
 
         // ===========================
@@ -669,6 +720,8 @@
         // ===========================
         function iniciarJogo() {
             totalPlayers = parseInt(document.getElementById("numPlayers").value);
+            numImpostores = Number(document.getElementById("numimpostores").value);
+
 
             if (isNaN(totalPlayers) || totalPlayers < 3) {
                 alert("Mínimo de 3 jogadores!");
@@ -705,11 +758,16 @@
             }
 
             // SALVAR NA MEMÓRIA
-            salvarMemoria(totalPlayers, nomes, selecionadas);
+            salvarMemoria(totalPlayers, nomes, selecionadas, numImpostores);
 
             // Sorteio do impostor
-            impostorIndex = Math.floor(Math.random() * totalPlayers);
-            players[impostorIndex].impostor = true;
+            impostoresRestantes = numImpostores;
+            while (impostoresRestantes > 0) {
+                impostoresRestantes--;
+
+                impostorIndex = Math.floor(Math.random() * totalPlayers);
+                players[impostorIndex].impostor = true;
+            }
 
             indexAtual = 0;
 
@@ -767,9 +825,19 @@
         // ===========================
         function escolherQuemComenca() {
             const chanceImpostor = 0.05;
+            const chanceProxImpostor = 0.33;
             if (Math.random() < chanceImpostor) {
                 primeiroASpeak = impostorIndex;
-            } else {
+            }
+            else if (Math.random() < chanceProxImpostor) {
+                if (players.length == impostorIndex) {
+                    primeiroASpeak = 0;
+                }
+                else {
+                    primeiroASpeak = impostorIndex + 1;
+                }
+            }
+            else {
                 const normais = players.filter(p => !p.impostor);
                 const escolha = Math.floor(Math.random() * normais.length);
                 primeiroASpeak = players.findIndex(p => p.id === normais[escolha].id);
