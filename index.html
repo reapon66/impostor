@@ -3,6 +3,8 @@
 
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" id="themeColorMeta" content="#3d007a">
     <title>Jogo do Impostor</title>
     <style>
         /* RESET */
@@ -11,123 +13,128 @@
             margin: 0;
             padding: 0;
             font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            -webkit-tap-highlight-color: transparent;
         }
 
         /* =========================
-   VARIÁVEIS (DESKTOP – MÉDIO)
-   ========================= */
+           TOKENS (mobile-first, fluidos via clamp — sem breakpoint quebrando fonte)
+           ========================= */
         :root {
-            --max-width: 50vw;
-            /* CARD */
-            --card-padding-y: 1.375rem;
-            /* 22px */
-            --card-padding-x: 1.125rem;
-            /* 18px */
-            --card-radius: 1rem;
-            /* 16px */
+            --card-padding-y: clamp(1.25rem, 3vw + .5rem, 1.75rem);
+            --card-padding-x: clamp(1rem, 3vw + .4rem, 1.375rem);
+            --card-radius: 1.25rem;
 
-            /* TÍTULOS */
-            --h1-size: 1.75rem;
-            /* 22px */
-            --h2-size: 1.5rem;
-            /* 18px */
-            --h3-size: 1.25rem;
-            /* 16px */
+            --h1-size: clamp(1.4rem, 4vw + .9rem, 1.9rem);
+            --h2-size: clamp(1.2rem, 3vw + .8rem, 1.5rem);
+            --h3-size: clamp(1rem, 2vw + .7rem, 1.2rem);
 
-            /* TEXTO */
-            --text-size: 1rem;
-            /* 14px */
-            --label-size: 0.875rem;
-            /* 13px */
+            --text-size: clamp(.95rem, 1.4vw + .7rem, 1.05rem);
+            --label-size: clamp(.85rem, 1.2vw + .65rem, .95rem);
 
-            /* INPUTS / BOTÕES */
-            --input-padding: 0.625rem;
-            /* 10px */
-            --input-font: 0.875rem;
-            /* 14px */
-            --button-padding: 0.75rem;
-            /* 12px */
-            --button-font: 0.875rem;
-            /* 14px */
+            --input-padding: .75rem;
+            --input-font: 1rem;
+            /* fixo em 16px pra não dar zoom automático no iOS */
+            --button-padding: .875rem;
+            --button-font: clamp(.95rem, 1.4vw + .7rem, 1.05rem);
 
-            --primary-color: #9b3dff;
-            --primary-gradient: linear-gradient(135deg, #7a1cff 0%, #6e00b3 100%);
+            --touch-target: 44px;
+            /* alvo de toque mínimo recomendado */
+            color-scheme: dark;
         }
 
         /* =========================
-   MOBILE – GRANDE
-   ========================= */
-        @media (max-width: 1000px) {
-            :root {
-                --max-width: 90vw;
+           TEMA "ROXO" (padrão / original)
+           ========================= */
+        :root,
+        [data-theme="purple"] {
+            --bg-gradient: linear-gradient(135deg, #3d007a, #6e00b3, #9b3dff);
+            --card-bg: rgba(20, 0, 40, .78);
+            --text-primary: #f2eaff;
+            --text-heading: #e8d4ff;
+            --text-heading-2: #d9c2ff;
+            --text-muted: #bfa6e6;
+            --accent: #9b3dff;
+            --accent-strong: #7a1cff;
+            --accent-gradient: linear-gradient(135deg, #7a1cff 0%, #6e00b3 100%);
+            --input-bg: #1a0033;
+            --input-border: #5d2b91;
+            --input-focus-bg: #26004f;
+            --input-focus-border: #b37aff;
+            --chip-bg: rgba(40, 0, 80, .55);
+            --chip-bg-hover: rgba(80, 0, 140, .7);
+            --chip-border: #5d2b91;
+            --danger: #ff6b81;
+            --scrollbar-thumb: rgba(180, 140, 255, .45);
+        }
 
-                --card-padding-y: 1.75rem;
-                /* 28px */
-                --card-padding-x: 1.375rem;
-                /* 22px */
-                --card-radius: 1.25rem;
-                /* 20px */
+        /* =========================
+           TEMA "ESCURO" (novo — quase preto, OLED friendly)
+           ========================= */
+        [data-theme="dark"] {
+            --bg-gradient: radial-gradient(ellipse at top, #1a1625 0%, #0a0810 55%, #050308 100%);
+            --card-bg: rgba(17, 15, 22, .85);
+            --text-primary: #e9e6f2;
+            --text-heading: #d6c9f2;
+            --text-heading-2: #c3b3e0;
+            --text-muted: #8d84a3;
+            --accent: #8b5cf6;
+            --accent-strong: #7c3aed;
+            --accent-gradient: linear-gradient(135deg, #7c3aed 0%, #4c1d95 100%);
+            --input-bg: #131019;
+            --input-border: #2c2438;
+            --input-focus-bg: #1b1626;
+            --input-focus-border: #8b5cf6;
+            --chip-bg: rgba(30, 26, 38, .7);
+            --chip-bg-hover: rgba(45, 38, 58, .85);
+            --chip-border: #2c2438;
+            --danger: #ff6b81;
+            --scrollbar-thumb: rgba(139, 92, 246, .4);
+        }
 
-                --h1-size: 5rem;
-                /* 26px */
-                --h2-size: 6rem;
-                /* 22px */
-                --h3-size: 4rem;
-                /* 18px */
-
-                --text-size: 3rem;
-                /* 16px */
-                --label-size: 2.8rem;
-                /* 15px */
-
-                --input-padding: 0.875rem;
-                /* 14px */
-                --input-font: 2.8rem;
-                /* 16px */
-                --button-padding: 1rem;
-                /* 16px */
-                --button-font: 2.8rem;
-                /* 16px */
-            }
-
-            /* HOVER */
-            .categoria-box label:hover {
-                background: rgba(40, 0, 80, 0.55);
-            }
+        html {
+            height: 100%;
         }
 
         /* BODY */
         body {
             min-height: 100vh;
-            background: linear-gradient(135deg, #3d007a, #6e00b3, #9b3dff);
+            min-height: 100dvh;
+            background: var(--bg-gradient);
             background-attachment: fixed;
-            color: #f2eaff;
+            color: var(--text-primary);
             display: flex;
             justify-content: center;
             align-items: center;
-            padding: 1rem;
+            padding: max(1rem, env(safe-area-inset-top)) max(1rem, env(safe-area-inset-right)) max(1.5rem, env(safe-area-inset-bottom)) max(1rem, env(safe-area-inset-left));
+            transition: background .4s ease;
         }
 
-        /* APP */
+        /* APP — mobile-first: 100% da largura útil, com teto pra desktop */
         #app {
-            width: var(--max-width);
+            width: 100%;
+            max-width: 480px;
+            margin-top: 3rem;
+            /* espaço reservado pros botões flutuantes */
+            margin-bottom: .5rem;
         }
 
         /* CARD */
         .card {
-            background: rgba(20, 0, 40, 0.75);
+            width: 100%;
+            background: var(--card-bg);
             padding: var(--card-padding-y) var(--card-padding-x);
             border-radius: var(--card-radius);
-            backdrop-filter: blur(6px);
-            box-shadow: 0 0.375rem 1.25rem rgba(0, 0, 0, 0.45);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, .45);
             text-align: center;
-            animation: fadeIn 0.35s ease-out;
+            animation: fadeIn .35s ease-out;
         }
 
         @keyframes fadeIn {
             from {
                 opacity: 0;
-                transform: translateY(0.625rem);
+                transform: translateY(.625rem);
             }
 
             to {
@@ -140,30 +147,31 @@
         h1 {
             font-size: var(--h1-size);
             font-weight: 700;
-            color: #e8d4ff;
-            margin-bottom: 0.875rem;
+            color: var(--text-heading);
+            margin-bottom: .75rem;
+            line-height: 1.2;
         }
 
         h2 {
             font-size: var(--h2-size);
             font-weight: 600;
-            color: #e8d4ff;
-            margin-bottom: 0.625rem;
+            color: var(--text-heading);
+            margin-bottom: .6rem;
         }
 
         h3 {
             font-size: var(--h3-size);
             font-weight: 600;
-            color: #d9c2ff;
-            margin-bottom: 0.5rem;
+            color: var(--text-heading-2);
+            margin-bottom: .5rem;
         }
 
         /* TEXTO */
         p {
             font-size: var(--text-size);
-            color: #e7d9ff;
-            line-height: 1.4;
-            margin-bottom: 0.625rem;
+            color: var(--text-primary);
+            line-height: 1.5;
+            margin-bottom: .6rem;
         }
 
         b {
@@ -173,10 +181,10 @@
         /* LABEL */
         label {
             display: block;
-            margin-top: 0.75rem;
-            margin-bottom: 0.375rem;
+            margin-top: .75rem;
+            margin-bottom: .375rem;
             font-weight: 600;
-            color: #e4cfff;
+            color: var(--text-heading-2);
             font-size: var(--label-size);
         }
 
@@ -184,25 +192,26 @@
         input,
         select {
             width: 100%;
+            min-height: var(--touch-target);
             padding: var(--input-padding);
-            border-radius: 0.375rem;
-            border: 1px solid #5d2b91;
-            background: #1a0033;
-            color: #f2eaff;
+            border-radius: .6rem;
+            border: 1px solid var(--input-border);
+            background: var(--input-bg);
+            color: var(--text-primary);
             font-size: var(--input-font);
             text-align: center;
-            transition: all 0.2s ease;
-            margin-bottom: 0.625rem;
+            transition: all .2s ease;
+            margin-bottom: .625rem;
         }
 
         input::placeholder {
-            color: #bfa6e6;
+            color: var(--text-muted);
         }
 
         input:focus,
         select:focus {
-            border-color: #b37aff;
-            background: #26004f;
+            border-color: var(--input-focus-border);
+            background: var(--input-focus-bg);
             outline: none;
         }
 
@@ -211,11 +220,10 @@
             display: flex;
             flex-wrap: wrap;
             justify-content: center;
-            gap: 0.5rem;
-            margin-top: 0.625rem;
+            gap: .5rem;
+            margin-top: .625rem;
         }
 
-        /* ESCONDE CHECKBOX */
         .categoria-box input[type="checkbox"] {
             appearance: none;
             width: 0;
@@ -225,73 +233,279 @@
 
         .categoria-box:has(input:checked) label,
         .categoria-box input:checked+label {
-            background: var(--primary-gradient);
+            background: var(--accent-gradient);
             border-color: transparent;
-            box-shadow: 0 4px 15px rgba(118, 75, 162, 0.4);
+            box-shadow: 0 4px 15px rgba(124, 58, 237, .4);
             transform: translateY(-2px);
             font-weight: bold;
             color: #fff;
         }
 
-        /* BOTÃO DA CATEGORIA */
         .categoria-box label {
             cursor: pointer;
-            padding: 0.5rem 0.875rem;
-            border-radius: 1.125rem;
-            background: rgba(40, 0, 80, 0.55);
-            border: 1px solid #5d2b91;
-            color: #e7d9ff;
+            min-height: var(--touch-target);
+            display: flex;
+            align-items: center;
+            padding: .5rem 1rem;
+            border-radius: 999px;
+            background: var(--chip-bg);
+            border: 1px solid var(--chip-border);
+            color: var(--text-primary);
             font-size: var(--label-size);
-            transition: all 0.2s ease;
+            transition: all .2s ease;
             user-select: none;
         }
 
-        /* HOVER */
-        .categoria-box label:hover {
-            background: rgba(80, 0, 140, 0.7);
+        @media (hover: hover) {
+            .categoria-box label:hover {
+                background: var(--chip-bg-hover);
+            }
         }
-
-
 
         /* BOTÕES */
         button {
             width: 100%;
+            min-height: var(--touch-target);
             margin-top: 1.25rem;
             padding: var(--button-padding);
-            border-radius: 0.5rem;
+            border-radius: .6rem;
             border: none;
             cursor: pointer;
-            background: #7a1cff;
+            background: var(--accent-strong);
             color: #fff;
             font-weight: 600;
             font-size: var(--button-font);
-            transition: background 0.2s ease, transform 0.1s ease;
+            transition: background .2s ease, transform .1s ease, opacity .2s ease;
         }
 
-        button:hover {
-            background: #9d4bff;
-            transform: scale(1.04);
+        @media (hover: hover) {
+            button:hover:not(:disabled) {
+                background: var(--accent);
+                transform: scale(1.03);
+            }
         }
 
-        button:active {
-            transform: scale(0.97);
+        button:active:not(:disabled) {
+            transform: scale(.97);
+        }
+
+        button:disabled {
+            opacity: .6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        button:focus-visible,
+        input:focus-visible,
+        select:focus-visible {
+            outline: 2px solid var(--input-focus-border);
+            outline-offset: 2px;
+        }
+
+        .btn-secondary {
+            background: transparent;
+            border: 1px solid var(--chip-border);
+            color: var(--text-primary);
+        }
+
+        @media (hover: hover) {
+            .btn-secondary:hover {
+                background: var(--chip-bg);
+            }
+        }
+
+        /* CONTROLES FLUTUANTES (tema / configurações) */
+        .floating-controls {
+            position: fixed;
+            top: max(.75rem, env(safe-area-inset-top));
+            right: max(.75rem, env(safe-area-inset-right));
+            display: flex;
+            gap: .5rem;
+            z-index: 60;
+        }
+
+        .icon-btn {
+            width: 2.5rem;
+            height: 2.5rem;
+            min-height: 0;
+            margin: 0;
+            border-radius: 50%;
+            background: var(--chip-bg);
+            border: 1px solid var(--chip-border);
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.15rem;
+            padding: 0;
+            backdrop-filter: blur(8px);
+            line-height: 1;
+        }
+
+        @media (hover: hover) {
+            .icon-btn:hover {
+                background: var(--chip-bg-hover);
+                transform: none;
+            }
+        }
+
+        /* MODAL DE CONFIGURAÇÕES */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, .55);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            z-index: 100;
+        }
+
+        .modal-overlay.hidden {
+            display: none;
+        }
+
+        .modal-card {
+            width: min(420px, 100%);
+            max-height: 85dvh;
+            overflow-y: auto;
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid var(--chip-border);
+            border-radius: 1.1rem;
+            padding: 1.5rem;
+            text-align: left;
+            animation: fadeIn .25s ease-out;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, .5);
+        }
+
+        .modal-card h2 {
+            text-align: center;
+        }
+
+        .settings-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+        }
+
+        /* SWITCH (toggle) */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 3rem;
+            height: 1.7rem;
+            flex: 0 0 auto;
+        }
+
+        .switch input {
+            position: absolute;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            min-height: 0;
+            margin: 0;
+            cursor: pointer;
+            z-index: 2;
+        }
+
+        .switch-track {
+            position: absolute;
+            inset: 0;
+            background: var(--input-bg);
+            border: 1px solid var(--chip-border);
+            border-radius: 999px;
+            transition: background .2s;
+            pointer-events: none;
+        }
+
+        .switch-track::after {
+            content: "";
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 1.25rem;
+            height: 1.25rem;
+            border-radius: 50%;
+            background: var(--text-muted);
+            transition: transform .2s, background .2s;
+        }
+
+        .switch input:checked+.switch-track {
+            background: var(--accent-gradient);
+            border-color: transparent;
+        }
+
+        .switch input:checked+.switch-track::after {
+            transform: translateX(1.3rem);
+            background: #fff;
+        }
+
+        /* TOAST */
+        .toast {
+            position: fixed;
+            left: 50%;
+            bottom: max(1.25rem, env(safe-area-inset-bottom));
+            transform: translateX(-50%) translateY(150%);
+            background: var(--card-bg);
+            border: 1px solid var(--chip-border);
+            color: var(--text-primary);
+            padding: .7rem 1.1rem;
+            border-radius: .7rem;
+            font-size: var(--label-size);
+            z-index: 150;
+            max-width: 90vw;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, .4);
+            transition: transform .3s ease;
+            pointer-events: none;
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .hidden {
+            display: none !important;
         }
 
         /* SCROLLBAR */
         ::-webkit-scrollbar {
-            width: 0.375rem;
+            width: .375rem;
         }
 
         ::-webkit-scrollbar-thumb {
-            background: rgba(180, 140, 255, 0.4);
-            border-radius: 0.25rem;
+            background: var(--scrollbar-thumb);
+            border-radius: .25rem;
+        }
+
+        /* RESPEITA "reduzir movimento" do sistema */
+        @media (prefers-reduced-motion: reduce) {
+
+            *,
+            *::before,
+            *::after {
+                animation-duration: .01ms !important;
+                transition-duration: .01ms !important;
+            }
         }
     </style>
 </head>
 
 <body>
 
+    <div class="floating-controls">
+        <button id="themeToggleBtn" class="icon-btn" title="Alternar tema" aria-label="Alternar tema"
+            onclick="alternarTema()">🌙</button>
+        <button class="icon-btn" title="Configurações" aria-label="Configurações"
+            onclick="abrirConfiguracoes()">⚙️</button>
+    </div>
+
     <div id="app"></div>
+
+    <div id="settingsModal" class="modal-overlay hidden" onclick="fecharConfiguracoesOverlay(event)"></div>
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
     <script>
         const app = document.getElementById("app");
@@ -517,7 +731,7 @@
                 "notebook",
                 "servidor",
                 "roteador",
-                "dronе",
+                "drone",
                 "inteligência artificial",
                 "blockchain",
                 "nanotecnologia",
@@ -869,13 +1083,220 @@
 
         };
 
-
         let totalPlayers = 0;
         let players = [];
         let impostorIndex = 0;
         let palavraEscolhida = "";
         let indexAtual = 0;
         let primeiroASpeak = 0;
+        let numImpostores = 1;
+
+        // ===========================
+        // TEMA (claro "roxo" / escuro)
+        // ===========================
+        let theme = localStorage.getItem("impostorTheme") || "purple";
+
+        function aplicarTema(t) {
+            theme = t;
+            document.documentElement.setAttribute("data-theme", t);
+            localStorage.setItem("impostorTheme", t);
+
+            const btn = document.getElementById("themeToggleBtn");
+            if (btn) btn.textContent = t === "dark" ? "☀️" : "🌙";
+
+            const meta = document.getElementById("themeColorMeta");
+            if (meta) meta.setAttribute("content", t === "dark" ? "#0a0810" : "#3d007a");
+        }
+
+        function alternarTema() {
+            aplicarTema(theme === "dark" ? "purple" : "dark");
+        }
+
+        // ===========================
+        // MODO IA
+        // ===========================
+        let modoIA = localStorage.getItem("impostorIAEnabled") === "true";
+        let apiKey = localStorage.getItem("impostorAIKey") || "";
+        let historicoIA = [];
+        try { historicoIA = JSON.parse(localStorage.getItem("impostorIAHistorico") || "[]"); } catch (e) { historicoIA = []; }
+        let ultimaPalavraLocal = localStorage.getItem("impostorUltimaPalavraLocal") || "";
+
+        function abrirConfiguracoes() {
+            document.getElementById("settingsModal").classList.remove("hidden");
+            renderConfiguracoes();
+        }
+
+        function fecharConfiguracoes() {
+            document.getElementById("settingsModal").classList.add("hidden");
+        }
+
+        function fecharConfiguracoesOverlay(e) {
+            if (e.target.id === "settingsModal") fecharConfiguracoes();
+        }
+
+        function renderConfiguracoes() {
+            const modal = document.getElementById("settingsModal");
+            modal.innerHTML = `
+        <div class="modal-card" onclick="event.stopPropagation()">
+            <h2>Configurações</h2>
+
+            <div class="settings-row" style="margin-top:1.25rem;">
+                <div>
+                    <h3 style="margin-bottom:2px">Modo IA</h3>
+                    <p style="margin:0;font-size:var(--label-size);color:var(--text-muted)">A palavra da rodada é gerada por IA, a partir de um tema livre em vez das categorias fixas.</p>
+                </div>
+                <label class="switch">
+                    <input type="checkbox" ${modoIA ? "checked" : ""} onchange="onToggleModoIA(this.checked)">
+                    <span class="switch-track"></span>
+                </label>
+            </div>
+
+            <div id="apiKeySection" class="${modoIA ? "" : "hidden"}" style="margin-top:1.25rem;">
+                <h3>API key do Gemini</h3>
+                <p style="font-size:var(--label-size);color:var(--text-muted)">
+                    Fica salva só neste navegador (localStorage) e é usada apenas para chamar generativelanguage.googleapis.com direto do app, sem servidor no meio.
+                    Gere a sua de graça em aistudio.google.com/app/apikey. Evite usar o Modo IA em um dispositivo compartilhado com quem não deve ver a key.
+                </p>
+                <div style="display:flex;gap:.5rem;align-items:center;">
+                    <input type="password" id="apiKeyInput" placeholder="AIza..." value="${apiKey.replace(/"/g, "&quot;")}" style="margin-bottom:0;">
+                    <button type="button" class="icon-btn" style="flex:0 0 auto;" onclick="alternarVisibilidadeKey()" aria-label="Mostrar ou ocultar key">👁</button>
+                </div>
+                <div style="display:flex;gap:.5rem;margin-top:.75rem;">
+                    <button type="button" onclick="salvarApiKey()" style="margin-top:0;">Salvar</button>
+                    <button type="button" class="btn-secondary" onclick="removerApiKey()" style="margin-top:0;">Remover</button>
+                </div>
+                <p id="apiKeyStatus" style="font-size:var(--label-size);min-height:1.2em;margin-top:.5rem;"></p>
+            </div>
+
+            <button type="button" class="btn-secondary" onclick="fecharConfiguracoes()" style="margin-top:1.5rem;">Fechar</button>
+        </div>
+    `;
+        }
+
+        function onToggleModoIA(v) {
+            modoIA = v;
+            localStorage.setItem("impostorIAEnabled", v ? "true" : "false");
+            renderConfiguracoes();
+            // se a tela inicial estiver aberta, re-renderiza pra trocar categorias <-> tema
+            if (document.querySelector(".card.inicio")) telaInicial();
+        }
+
+        function alternarVisibilidadeKey() {
+            const input = document.getElementById("apiKeyInput");
+            if (!input) return;
+            input.type = input.type === "password" ? "text" : "password";
+        }
+
+        function salvarApiKey() {
+            const input = document.getElementById("apiKeyInput");
+            const status = document.getElementById("apiKeyStatus");
+            const v = input.value.trim();
+            if (!v) {
+                status.textContent = "Digite uma key válida.";
+                status.style.color = "var(--danger)";
+                return;
+            }
+            apiKey = v;
+            localStorage.setItem("impostorAIKey", apiKey);
+            status.textContent = "Key salva neste navegador ✓";
+            status.style.color = "";
+        }
+
+        function removerApiKey() {
+            apiKey = "";
+            localStorage.removeItem("impostorAIKey");
+            renderConfiguracoes();
+        }
+
+        // ===========================
+        // TOAST (aviso rápido)
+        // ===========================
+        let toastTimeout = null;
+        function mostrarAviso(msg) {
+            const toast = document.getElementById("toast");
+            if (!toast) return;
+            toast.textContent = msg;
+            toast.classList.add("show");
+            clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(() => toast.classList.remove("show"), 4200);
+        }
+
+        // ===========================
+        // GERAR PALAVRA COM IA (chamada direta à API do Gemini)
+        // ===========================
+        const GEMINI_MODEL = "gemini-1.5-flash"; // alias sempre apontando pro Flash GA mais atual
+
+        async function gerarPalavraIA(tema) {
+            const temaTexto = tema && tema.trim()
+                ? tema.trim()
+                : "livre — escolha um tema criativo e divertido pro grupo";
+
+            const evitar = historicoIA.slice(-8);
+            const prompt = `Você gera a palavra secreta de uma rodada do jogo social "Impostor" (estilo Spyfall/Just One), jogado por um grupo de amigos brasileiro.
+
+Tema pedido: ${temaTexto}
+${evitar.length ? `Não repita nenhuma destas palavras já usadas recentemente: ${evitar.join(", ")}.` : ""}
+
+Regras da resposta:
+- Responda APENAS com a palavra ou expressão curta (no máximo 4 palavras), sem aspas, sem explicação e sem pontuação no final.
+- Escolha algo específico o bastante pra gerar boa discussão, mas conhecido o suficiente pra um grupo de amigos brasileiro reconhecer.
+- Responda em português do Brasil.`;
+
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
+
+            const response = await fetch(url, {
+                method: "POST",
+                headers: {
+                    "content-type": "application/json",
+                    "x-goog-api-key": apiKey
+                },
+                body: JSON.stringify({
+                    contents: [{ parts: [{ text: prompt }] }],
+                    generationConfig: { maxOutputTokens: 40, temperature: 1 }
+                })
+            });
+
+            if (!response.ok) {
+                let msg = `Erro HTTP ${response.status}`;
+                try {
+                    const errBody = await response.json();
+                    if (errBody && errBody.error && errBody.error.message) msg = errBody.error.message;
+                } catch (e) { /* corpo não era JSON, mantém msg genérica */ }
+                throw new Error(msg);
+            }
+
+            const data = await response.json();
+            const candidato = (data.candidates || [])[0];
+            const parts = candidato && candidato.content ? candidato.content.parts : [];
+            let palavra = (parts && parts[0] && parts[0].text ? parts[0].text : "").trim();
+            palavra = palavra.replace(/^["'.]+|["'.]+$/g, "").trim();
+
+            if (!palavra) throw new Error("Resposta vazia da IA (pode ter sido bloqueada por filtro de segurança)");
+
+            historicoIA.push(palavra);
+            if (historicoIA.length > 20) historicoIA = historicoIA.slice(-20);
+            localStorage.setItem("impostorIAHistorico", JSON.stringify(historicoIA));
+
+            return palavra;
+        }
+
+        // ===========================
+        // ESCOLHA LOCAL (sem repetir a última, se der)
+        // ===========================
+        function escolherPalavraLocal(pool) {
+            if (!pool.length) return "";
+            let escolha = pool[Math.floor(Math.random() * pool.length)];
+            if (pool.length > 1) {
+                let tentativas = 0;
+                while (escolha === ultimaPalavraLocal && tentativas < 10) {
+                    escolha = pool[Math.floor(Math.random() * pool.length)];
+                    tentativas++;
+                }
+            }
+            ultimaPalavraLocal = escolha;
+            localStorage.setItem("impostorUltimaPalavraLocal", escolha);
+            return escolha;
+        }
 
         // ===========================
         // TELA INICIAL
@@ -883,13 +1304,12 @@
         function telaInicial() {
             const memoria = carregarMemoria();
 
-
             app.innerHTML = `
-        <div class=" card inicio">
+        <div class="card inicio">
             <h1>Impostor da oficina da torta</h1>
 
             <h3 style="margin-top:20px">Quantidade de jogadores:</h3>
-            <input type="number" id="numPlayers" min="3"  value="${memoria.qtd || 5}" oninput="gerarInputsJogadores()">
+            <input type="number" id="numPlayers" min="3" value="${memoria.qtd || 5}" oninput="gerarInputsJogadores()">
 
             <h3 style="margin-top:20px">Nomes dos jogadores:</h3>
             <div id="playerNames"></div>
@@ -899,21 +1319,27 @@
                 <option value="1" ${memoria.numImpostores == 1 ? "selected" : ""}>1</option>
                 <option value="2" ${memoria.numImpostores == 2 ? "selected" : ""}>2</option>
             </select>
-            
 
-            <h3 style="margin-top:30px">Escolha as categorias:</h3>
-            <div id="categoriaList">
-                ${Object.keys(categorias).map(cat => `
-                    <div class="categoria-box">
-                        <label>
-                            <input type="checkbox" value="${cat}" ${memoria.categorias.includes(cat) ? "checked" : ""}>
-                            ${cat}
-                        </label>
-                    </div>
-                `).join("")}
-            </div>
+            ${modoIA ? `
+                <h3 style="margin-top:30px">Tema para a IA (opcional):</h3>
+                <input type="text" id="temaIA" placeholder="ex: filmes de terror, carros, memes de 2020..." value="${(memoria.temaIA || "").replace(/"/g, "&quot;")}">
+                <p style="font-size:var(--label-size);color:var(--text-muted)">Em branco, a IA escolhe um tema surpresa.</p>
+                ${!apiKey ? `<p style="color:var(--danger);font-size:var(--label-size)">⚠️ Configure sua API key em ⚙️ pro Modo IA funcionar.</p>` : ""}
+            ` : `
+                <h3 style="margin-top:30px">Escolha as categorias:</h3>
+                <div id="categoriaList">
+                    ${Object.keys(categorias).map(cat => `
+                        <div class="categoria-box">
+                            <label>
+                                <input type="checkbox" value="${cat}" ${memoria.categorias.includes(cat) ? "checked" : ""}>
+                                ${cat}
+                            </label>
+                        </div>
+                    `).join("")}
+                </div>
+            `}
 
-            <button onclick="iniciarJogo()">Começar</button>
+            <button id="startBtn" onclick="iniciarJogo()">Começar</button>
         </div>
     `;
 
@@ -926,7 +1352,6 @@
         function gerarInputsJogadores(nomesSalvos = []) {
             const qtd = parseInt(document.getElementById("numPlayers").value);
             const box = document.getElementById("playerNames");
-
 
             if (!qtd || qtd < 1) return;
 
@@ -941,14 +1366,15 @@
         }
 
         // ===========================
-        // SALVAR NO LOCALSTORAGE
+        // SALVAR / CARREGAR MEMÓRIA (localStorage)
         // ===========================
-        function salvarMemoria(qtd, nomes, categoriasMarcadas, numImpostores) {
+        function salvarMemoria(qtd, nomes, categoriasMarcadas, numImpostoresVal, temaIA) {
             localStorage.setItem("jogoImpostor", JSON.stringify({
                 qtd,
                 nomes,
                 categorias: categoriasMarcadas,
-                numImpostores
+                numImpostores: numImpostoresVal,
+                temaIA
             }));
         }
 
@@ -959,7 +1385,8 @@
                     qtd: 5,
                     nomes: [],
                     categorias: Object.keys(categorias),
-                    numImpostores: 1
+                    numImpostores: 1,
+                    temaIA: ""
                 };
             }
 
@@ -969,66 +1396,85 @@
                 qtd: parsed.qtd ?? 5,
                 nomes: parsed.nomes ?? [],
                 categorias: parsed.categorias ?? Object.keys(categorias),
-                numImpostores: parsed.numImpostores ?? 1
+                numImpostores: parsed.numImpostores ?? 1,
+                temaIA: parsed.temaIA ?? ""
             };
         }
 
         // ===========================
         // INICIAR JOGO
         // ===========================
-        function iniciarJogo() {
+        async function iniciarJogo() {
             totalPlayers = parseInt(document.getElementById("numPlayers").value);
             numImpostores = Number(document.getElementById("numimpostores").value);
-
 
             if (isNaN(totalPlayers) || totalPlayers < 3) {
                 alert("Mínimo de 3 jogadores!");
                 return;
             }
 
-            // Categorias
-            const selecionadas = [...document.querySelectorAll("#categoriaList input:checked")]
-                .map(c => c.value);
+            let selecionadas = [];
+            let temaIA = "";
 
-            if (selecionadas.length === 0) {
-                alert("Selecione pelo menos 1 categoria!");
-                return;
+            if (modoIA) {
+                if (!apiKey) {
+                    alert("Configure sua API key do Gemini em ⚙️ Configurações pra usar o Modo IA (ou desative o Modo IA).");
+                    return;
+                }
+                const temaInput = document.getElementById("temaIA");
+                temaIA = temaInput ? temaInput.value.trim() : "";
+            } else {
+                selecionadas = [...document.querySelectorAll("#categoriaList input:checked")].map(c => c.value);
+                if (selecionadas.length === 0) {
+                    alert("Selecione pelo menos 1 categoria!");
+                    return;
+                }
             }
 
-            // Palavras da categoria
-            let pool = [];
-            selecionadas.forEach(cat => {
-                pool = pool.concat(categorias[cat]);
-            });
-
-            palavraEscolhida = pool[Math.floor(Math.random() * pool.length)];
-
             // Nomes dos jogadores
-            players = [];
             let nomes = [];
-
             for (let i = 1; i <= totalPlayers; i++) {
                 let nome = document.getElementById(`playerName${i}`).value.trim();
                 if (!nome) nome = "Player " + i;
-
                 nomes.push(nome);
-                players.push({ id: i, nome, impostor: false });
             }
 
             // SALVAR NA MEMÓRIA
-            salvarMemoria(totalPlayers, nomes, selecionadas, numImpostores);
+            salvarMemoria(totalPlayers, nomes, selecionadas, numImpostores, temaIA);
 
-            // Sorteio do impostor
-            impostoresRestantes = numImpostores;
+            const startBtn = document.getElementById("startBtn");
+
+            if (modoIA) {
+                if (startBtn) { startBtn.disabled = true; startBtn.textContent = "Gerando com IA..."; }
+                try {
+                    palavraEscolhida = await gerarPalavraIA(temaIA);
+                } catch (e) {
+                    console.error("Falha ao gerar palavra com IA:", e);
+                    mostrarAviso("IA indisponível, usando lista local. (" + e.message + ")");
+                    palavraEscolhida = escolherPalavraLocal(Object.values(categorias).flat());
+                }
+                if (startBtn) { startBtn.disabled = false; startBtn.textContent = "Começar"; }
+            } else {
+                let pool = [];
+                selecionadas.forEach(cat => { pool = pool.concat(categorias[cat]); });
+                palavraEscolhida = escolherPalavraLocal(pool);
+            }
+
+            // Jogadores
+            players = nomes.map((nome, i) => ({ id: i + 1, nome, impostor: false }));
+
+            // Sorteio dos impostores SEM repetir o mesmo jogador
+            // (bug do original: sorteava com reposição e podia marcar o mesmo player 2x quando numImpostores=2)
+            const indicesDisponiveis = players.map((_, i) => i);
+            let impostoresRestantes = Math.min(numImpostores, players.length);
             while (impostoresRestantes > 0) {
                 impostoresRestantes--;
-
-                impostorIndex = Math.floor(Math.random() * totalPlayers);
+                const escolha = Math.floor(Math.random() * indicesDisponiveis.length);
+                impostorIndex = indicesDisponiveis.splice(escolha, 1)[0];
                 players[impostorIndex].impostor = true;
             }
 
             indexAtual = 0;
-
             mostrarPlayerTelaSegura();
         }
 
@@ -1058,7 +1504,7 @@
         <div class="card">
             <h2>${p.nome}</h2>
             ${p.impostor
-                    ? `<p>Você é o <b style="color: var(--primary-color);">IMPOSTOR</b>.</p>`
+                    ? `<p>Você é o <b style="color: var(--accent);">IMPOSTOR</b>.</p>`
                     : `<p>Sua palavra é:<br><br><b>${palavraEscolhida}</b></p>`
                 }
             <button onclick="proximoPlayer()">OK, já vi</button>
@@ -1084,18 +1530,15 @@
         function escolherQuemComenca() {
             const chanceImpostor = 0.05;
             const chanceProxImpostor = 0.33;
-            if (Math.random() < chanceImpostor) {
+            const r = Math.random();
+
+            if (r < chanceImpostor) {
                 primeiroASpeak = impostorIndex;
-            }
-            else if (Math.random() < chanceProxImpostor) {
-                if (players.length == impostorIndex) {
-                    primeiroASpeak = 0;
-                }
-                else {
-                    primeiroASpeak = impostorIndex + 1;
-                }
-            }
-            else {
+            } else if (r < chanceImpostor + chanceProxImpostor) {
+                // bug do original: quando o impostor era o último da lista, isso estourava o índice
+                // (players.length é sempre != a um índice válido) e o app quebrava. Corrigido com wrap-around:
+                primeiroASpeak = (impostorIndex + 1) % players.length;
+            } else {
                 const normais = players.filter(p => !p.impostor);
                 const escolha = Math.floor(Math.random() * normais.length);
                 primeiroASpeak = players.findIndex(p => p.id === normais[escolha].id);
@@ -1124,6 +1567,10 @@
     `;
         }
 
+        // ===========================
+        // INÍCIO
+        // ===========================
+        aplicarTema(theme);
         telaInicial();
     </script>
 
