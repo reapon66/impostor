@@ -1227,12 +1227,16 @@
         const GEMINI_MODEL = "gemini-3.6-flash"; // alias sempre apontando pro Flash GA mais atual
 
         async function gerarPalavraIA(tema) {
-            const temaTexto = tema && tema.trim()
-                ? tema.trim()
-                : "livre — escolha um tema criativo e divertido pro grupo";
+            console.group("🤖 [GEMINI] Gerando palavra");
 
-            const evitar = historicoIA.slice(-8);
-            const prompt = `Você gera a palavra secreta de uma rodada do jogo social "Impostor" (estilo Spyfall/Just One), jogado por um grupo de amigos brasileiro.
+            try {
+                const temaTexto = tema && tema.trim()
+                    ? tema.trim()
+                    : "livre — escolha um tema criativo e divertido pro grupo";
+
+                const evitar = historicoIA.slice(-8);
+
+                const prompt = `Você gera a palavra secreta de uma rodada do jogo social "Impostor" (estilo Spyfall/Just One), jogado por um grupo de amigos brasileiro.
 
 Tema pedido: ${temaTexto}
 ${evitar.length ? `Não repita nenhuma destas palavras já usadas recentemente: ${evitar.join(", ")}.` : ""}
@@ -1242,85 +1246,327 @@ Regras da resposta:
 - Escolha algo específico o bastante pra gerar boa discussão, mas conhecido o suficiente pra um grupo de amigos brasileiro reconhecer.
 - Responda em português do Brasil.`;
 
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
+                const url =
+                    `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
 
-            const response = await fetch(url, {
-                method: "POST",
-                headers: {
-                    "content-type": "application/json",
-                    "x-goog-api-key": apiKey
-                },
-                body: JSON.stringify({
-                    contents: [{ parts: [{ text: prompt }] }],
-                    generationConfig: { maxOutputTokens: 40, temperature: 1 }
-                })
-            });
+                // ============================================================
+                // DEBUG DA REQUISIÇÃO
+                // ============================================================
 
-            if (!response.ok) {
-                let msg = `Erro HTTP ${response.status}`;
+                console.log("Modelo:", GEMINI_MODEL);
+                console.log("URL:", url);
+                console.log("Tema:", temaTexto);
+                console.log("Palavras a evitar:", evitar);
+                console.log("Prompt:", prompt);
+
+                const requestBody = {
+                    contents: [
+                        {
+                            parts: [
+                                {
+                                    text: prompt
+                                }
+                            ]
+                        }
+                    ],
+                    generationConfig: {
+                        maxOutputTokens: 40,
+                        temperature: 1
+                    }
+                };
+
+                console.log("Request body:", requestBody);
+
+                // ============================================================
+                // FETCH
+                // ============================================================
+
+                let response;
+
                 try {
-                    const errBody = await response.json();
-                    if (errBody && errBody.error && errBody.error.message) msg = errBody.error.message;
-                } catch (e) { /* corpo não era JSON, mantém msg genérica */ }
-                throw new Error(msg);
-            }
+                    console.log("Enviando requisição para Gemini...");
 
-            const data = await response.json();
+                    response = await fetch(url, {
+                        method: "POST",
+                        headers: {
+                            "content-type": "application/json",
+                            "x-goog-api-key": apiKey
+                        },
+                        body: JSON.stringify(requestBody)
+                    });
 
-            console.log("Resposta completa do Gemini:", data);
+                    console.log("Resposta recebida!");
+                    console.log("HTTP Status:", response.status);
+                    console.log("HTTP OK:", response.ok);
+                    console.log("HTTP Status Text:", response.statusText);
+                    console.log(
+                        "Content-Type:",
+                        response.headers.get("content-type")
+                    );
 
-            const candidato = data.candidates?.[0];
+                } catch (fetchError) {
+                    console.error("❌ ERRO NO FETCH");
+                    console.error("Nome:", fetchError?.name);
+                    console.error("Mensagem:", fetchError?.message);
+                    console.error("Stack:", fetchError?.stack);
 
-            if (!candidato) {
-                console.error("Gemini não retornou candidatos:", data);
-
-                const motivo = data.promptFeedback?.blockReason;
-
-                if (motivo) {
-                    throw new Error(`Prompt bloqueado pelo Gemini: ${motivo}`);
+                    throw new Error(
+                        `Falha de comunicação com o Gemini: ${fetchError?.message || "erro desconhecido"}`
+                    );
                 }
 
-                throw new Error("Gemini não retornou nenhum candidato.");
-            }
+                // ============================================================
+                // LER RESPOSTA BRUTA
+                // ============================================================
 
-            console.log("Candidato:", candidato);
-            console.log("Finish reason:", candidato.finishReason);
-            console.log("Safety ratings:", candidato.safetyRatings);
+                let rawResponse;
 
-            const parts = candidato.content?.parts || [];
+                try {
+                    rawResponse = await response.text();
 
-            let palavra = parts
-                .map(part => part.text || "")
-                .join("")
-                .trim();
+                    console.log("Resposta bruta do Gemini:");
+                    console.log(rawResponse);
 
-            palavra = palavra.replace(/^["'.]+|["'.]+$/g, "").trim();
+                } catch (bodyError) {
+                    console.error("❌ ERRO AO LER CORPO DA RESPOSTA");
+                    console.error(bodyError);
 
-            if (!palavra) {
-                console.error("Resposta sem texto:", {
-                    candidato,
-                    finishReason: candidato.finishReason,
-                    safetyRatings: candidato.safetyRatings,
-                    promptFeedback: data.promptFeedback
-                });
+                    throw new Error(
+                        "Não foi possível ler a resposta do Gemini."
+                    );
+                }
 
-                throw new Error(
-                    `Gemini não retornou texto. Motivo: ${candidato.finishReason || "desconhecido"}`
+                // ============================================================
+                // HTTP ERROR
+                // ============================================================
+
+                if (!response.ok) {
+                    console.error("❌ GEMINI RETORNOU ERRO HTTP");
+                    console.error("Status:", response.status);
+                    console.error("Status Text:", response.statusText);
+                    console.error("Body:", rawResponse);
+
+                    let mensagem = `Erro HTTP ${response.status}`;
+
+                    try {
+                        const errBody = JSON.parse(rawResponse);
+
+                        console.error("Erro JSON parseado:", errBody);
+
+                        if (errBody?.error) {
+                            console.error("Código:", errBody.error.code);
+                            console.error("Mensagem:", errBody.error.message);
+                            console.error("Status:", errBody.error.status);
+
+                            mensagem =
+                                errBody.error.message ||
+                                mensagem;
+                        }
+
+                    } catch (parseError) {
+                        console.error(
+                            "Resposta de erro não é JSON válido:",
+                            parseError
+                        );
+                    }
+
+                    throw new Error(mensagem);
+                }
+
+                // ============================================================
+                // PARSE DO JSON
+                // ============================================================
+
+                let data;
+
+                try {
+                    data = JSON.parse(rawResponse);
+
+                    console.log("JSON parseado:");
+                    console.log(data);
+
+                } catch (parseError) {
+                    console.error("❌ ERRO AO PARSEAR JSON");
+                    console.error("Erro:", parseError);
+                    console.error("Resposta recebida:", rawResponse);
+
+                    throw new Error(
+                        "O Gemini retornou uma resposta que não é um JSON válido."
+                    );
+                }
+
+                // ============================================================
+                // VERIFICAR ERRO DENTRO DO JSON
+                // ============================================================
+
+                if (data?.error) {
+                    console.error("❌ API RETORNOU CAMPO ERROR");
+                    console.error("Error completo:", data.error);
+
+                    throw new Error(
+                        data.error.message ||
+                        "Erro retornado pela API do Gemini."
+                    );
+                }
+
+                // ============================================================
+                // PROMPT FEEDBACK / SEGURANÇA
+                // ============================================================
+
+                if (data?.promptFeedback) {
+                    console.log("Prompt feedback:", data.promptFeedback);
+
+                    if (data.promptFeedback.blockReason) {
+                        console.error(
+                            "🚫 PROMPT BLOQUEADO:",
+                            data.promptFeedback.blockReason
+                        );
+
+                        console.error(
+                            "Safety ratings:",
+                            data.promptFeedback.safetyRatings
+                        );
+
+                        throw new Error(
+                            `Prompt bloqueado pelo Gemini: ${data.promptFeedback.blockReason}`
+                        );
+                    }
+                }
+
+                // ============================================================
+                // CANDIDATE
+                // ============================================================
+
+                const candidato = data?.candidates?.[0];
+
+                if (!candidato) {
+                    console.error("❌ NENHUM CANDIDATO RETORNADO");
+                    console.error("Resposta completa:", data);
+
+                    throw new Error(
+                        "Gemini não retornou nenhum candidato."
+                    );
+                }
+
+                console.log("Candidate completo:");
+                console.log(candidato);
+
+                // ============================================================
+                // FINISH REASON
+                // ============================================================
+
+                console.log(
+                    "Finish reason:",
+                    candidato.finishReason
                 );
+
+                console.log(
+                    "Safety ratings:",
+                    candidato.safetyRatings
+                );
+
+                if (candidato.finishReason !== "STOP") {
+                    console.warn(
+                        "⚠️ Gemini terminou por um motivo diferente de STOP:",
+                        candidato.finishReason
+                    );
+                }
+
+                // ============================================================
+                // CONTENT
+                // ============================================================
+
+                console.log(
+                    "Content:",
+                    candidato.content
+                );
+
+                const parts = candidato.content?.parts || [];
+
+                console.log(
+                    "Parts:",
+                    parts
+                );
+
+                // ============================================================
+                // EXTRAIR TEXTO
+                // ============================================================
+
+                let palavra = parts
+                    .map(part => part?.text || "")
+                    .join("")
+                    .trim();
+
+                console.log(
+                    "Texto antes da limpeza:",
+                    palavra
+                );
+
+                palavra = palavra
+                    .replace(/^["'.]+|["'.]+$/g, "")
+                    .trim();
+
+                console.log(
+                    "Texto depois da limpeza:",
+                    palavra
+                );
+
+                // ============================================================
+                // RESPOSTA VAZIA
+                // ============================================================
+
+                if (!palavra) {
+                    console.error("❌ RESPOSTA FINAL VAZIA");
+
+                    console.error("Diagnóstico completo:", {
+                        candidato,
+                        finishReason: candidato.finishReason,
+                        safetyRatings: candidato.safetyRatings,
+                        promptFeedback: data.promptFeedback,
+                        content: candidato.content,
+                        parts
+                    });
+
+                    throw new Error(
+                        `Gemini não retornou texto. Motivo: ${candidato.finishReason || "desconhecido"
+                        }`
+                    );
+                }
+
+                // ============================================================
+                // SALVAR HISTÓRICO
+                // ============================================================
+
+                historicoIA.push(palavra);
+
+                if (historicoIA.length > 20) {
+                    historicoIA = historicoIA.slice(-20);
+                }
+
+                localStorage.setItem(
+                    "impostorIAHistorico",
+                    JSON.stringify(historicoIA)
+                );
+
+                console.log("✅ Palavra gerada:", palavra);
+                console.log("Histórico atualizado:", historicoIA);
+
+                console.groupEnd();
+
+                return palavra;
+
+            } catch (error) {
+
+                console.error("❌ ERRO FINAL EM gerarPalavraIA");
+                console.error("Mensagem:", error?.message);
+                console.error("Nome:", error?.name);
+                console.error("Stack:", error?.stack);
+                console.error("Objeto completo:", error);
+
+                console.groupEnd();
+
+                throw error;
             }
-
-            historicoIA.push(palavra);
-
-            if (historicoIA.length > 20) {
-                historicoIA = historicoIA.slice(-20);
-            }
-
-            localStorage.setItem(
-                "impostorIAHistorico",
-                JSON.stringify(historicoIA)
-            );
-
-            return palavra;
         }
 
         // ===========================
