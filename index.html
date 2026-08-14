@@ -1266,16 +1266,59 @@ Regras da resposta:
             }
 
             const data = await response.json();
-            const candidato = (data.candidates || [])[0];
-            const parts = candidato && candidato.content ? candidato.content.parts : [];
-            let palavra = (parts && parts[0] && parts[0].text ? parts[0].text : "").trim();
+
+            console.log("Resposta completa do Gemini:", data);
+
+            const candidato = data.candidates?.[0];
+
+            if (!candidato) {
+                console.error("Gemini não retornou candidatos:", data);
+
+                const motivo = data.promptFeedback?.blockReason;
+
+                if (motivo) {
+                    throw new Error(`Prompt bloqueado pelo Gemini: ${motivo}`);
+                }
+
+                throw new Error("Gemini não retornou nenhum candidato.");
+            }
+
+            console.log("Candidato:", candidato);
+            console.log("Finish reason:", candidato.finishReason);
+            console.log("Safety ratings:", candidato.safetyRatings);
+
+            const parts = candidato.content?.parts || [];
+
+            let palavra = parts
+                .map(part => part.text || "")
+                .join("")
+                .trim();
+
             palavra = palavra.replace(/^["'.]+|["'.]+$/g, "").trim();
 
-            if (!palavra) throw new Error("Resposta vazia da IA (pode ter sido bloqueada por filtro de segurança)");
+            if (!palavra) {
+                console.error("Resposta sem texto:", {
+                    candidato,
+                    finishReason: candidato.finishReason,
+                    safetyRatings: candidato.safetyRatings,
+                    promptFeedback: data.promptFeedback
+                });
+
+                throw new Error(
+                    `Gemini não retornou texto. Motivo: ${candidato.finishReason || "desconhecido"}`
+                );
+            }
 
             historicoIA.push(palavra);
-            if (historicoIA.length > 20) historicoIA = historicoIA.slice(-20);
-            localStorage.setItem("impostorIAHistorico", JSON.stringify(historicoIA));
+
+            if (historicoIA.length > 20) {
+                historicoIA = historicoIA.slice(-20);
+            }
+
+            localStorage.setItem(
+                "impostorIAHistorico",
+                JSON.stringify(historicoIA)
+            );
 
             return palavra;
         }
